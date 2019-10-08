@@ -19,14 +19,13 @@ def statistics(hours)
 Unit = BBC working hours.
 
 Median     #{hours.median.round}
-50th       #{hours.percentile(50).round}
 70th       #{hours.percentile(70).round}
 80th       #{hours.percentile(80).round}
 90th       #{hours.percentile(90).round}
 99th       #{hours.percentile(99).round}
 
-Assumptions:
-- Weekends do not exist.
+Does not take into account when PRs are open over a weekend.
+Therefore the review times shown above are worst case scenarios.
 )
 end
 
@@ -49,5 +48,5 @@ merged_pull_requests = pull_requests.select {|pr| pr.merged_at }
 total_hours_duration = total_pr_duration(merged_pull_requests)
 work_hours_duration = convert_hours_to_work_hours(total_hours_duration)
 
-p "#{merged_pull_requests.length} merged PRs in #{REPO}."
+print "\n\n#{merged_pull_requests.length} merged PRs in #{REPO}."
 print statistics(work_hours_duration)
