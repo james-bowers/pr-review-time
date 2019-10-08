@@ -1,10 +1,11 @@
 require 'octokit'
-require 'time'
 require 'descriptive_statistics'
+
 
 ONE_HOUR = 3600
 WORK_HOURS_PER_DAY = 8
 HOURS_IN_A_DAY = 24
+WEEKEND = ONE_HOUR * HOURS_IN_A_DAY * 2
 REPO = ARGV[0]
 
 access_token = File.read(".github_secret_token")
@@ -23,9 +24,6 @@ Median     #{hours.median.round}
 80th       #{hours.percentile(80).round}
 90th       #{hours.percentile(90).round}
 99th       #{hours.percentile(99).round}
-
-Does not take into account when PRs are open over a weekend.
-Therefore the review times shown above are worst case scenarios.
 )
 end
 
@@ -38,10 +36,19 @@ end
 
 def total_pr_duration(prs)
   prs.map do |pr|
-    # TODO: take into account weekends
-    ((pr.merged_at - pr.created_at) / ONE_HOUR)
+    (((pr.merged_at - pr.created_at) - weekend_time(pr.created_at, pr.merged_at)) / ONE_HOUR)
   end
 end
+
+def weekend_time(from, to)
+  weekends_in_range(from, to) * WEEKEND
+end
+
+def weekends_in_range(from, to)
+  (from.to_date..to.to_date)
+  .select { |day| day.saturday? }.length
+end
+
 
 merged_pull_requests = pull_requests.select {|pr| pr.merged_at }
 
